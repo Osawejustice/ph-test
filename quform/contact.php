@@ -38,36 +38,31 @@ if (isset($_POST['quform_ajax'])) {
     $phone = isset($_POST['phone']) ? sanitize_input($_POST['phone']) : '';
     $message = sanitize_input($_POST['message']);
     
-    // Prepare email
-    $to = 'info@openheartshomecare.net';
-    $email_subject = 'New Contact Form Submission - ' . $subject;
+    // Prepare WhatsApp message
+    // WhatsApp phone number (with country code, no special characters)
+    $whatsapp_phone = '17785819636'; // 1-778-581-9636
     
-    $email_body = "You have received a new message from the contact form.\n\n";
-    $email_body .= "Name: " . $name . "\n";
-    $email_body .= "Email: " . $email . "\n";
-    $email_body .= "Phone: " . $phone . "\n";
-    $email_body .= "Subject: " . $subject . "\n";
-    $email_body .= "Message:\n" . $message . "\n";
-    
-    // Send email
-    $headers = "From: " . $email . "\r\n";
-    $headers .= "Reply-To: " . $email . "\r\n";
-    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-    
-    $mail_sent = @mail($to, $email_subject, $email_body, $headers);
-    
-    if ($mail_sent) {
-        $response = array(
-            'type' => 'success',
-            'message' => 'Thank you for contacting us! We will get back to you as soon as possible.'
-        );
-    } else {
-        $response = array(
-            'type' => 'error',
-            'error' => 'There was an error sending your message. Please try again later.',
-            'elementErrors' => array()
-        );
+    // Create formatted message for WhatsApp
+    $whatsapp_message = "Name: " . $name . "\n";
+    $whatsapp_message .= "Email: " . $email . "\n";
+    if (!empty($phone)) {
+        $whatsapp_message .= "Phone: " . $phone . "\n";
     }
+    $whatsapp_message .= "Subject: " . $subject . "\n\n";
+    $whatsapp_message .= "Message:\n" . $message;
+    
+    // URL encode the message
+    $encoded_message = urlencode($whatsapp_message);
+    
+    // Generate WhatsApp link
+    $whatsapp_link = "https://api.whatsapp.com/send?phone=" . $whatsapp_phone . "&text=" . $encoded_message;
+    
+    // Return success with WhatsApp link
+    $response = array(
+        'type' => 'success',
+        'message' => 'Thank you for contacting us! Redirecting to WhatsApp...',
+        'whatsapp_link' => $whatsapp_link
+    );
     
     echo json_encode($response);
     exit;
